@@ -19,6 +19,7 @@
     "tailwindcss": "^3.0.24"
   },
   "devDependencies": {
+    "@types/navermaps": "^3.0.13",
     "@types/node": "17.0.24",
     "@types/react": "18.0.5",
     "eslint": "7.32.0",

@@ -22,6 +22,7 @@ import {
   WiDaySunny,
   WiDayThunderstorm,
 } from "react-icons/wi";
+import getConfig from "next/config";
 
 const navigation = [
   { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
@@ -129,7 +130,9 @@ const Home = () => {
   const getDailyWeather = useCallback(
     async (latitude: number, longitude: number) => {
       const weatherResponse = await fetch(
-        `${process.env.WEB_URL}/api/weather/daily?latitude=${latitude}&longitude=${longitude}`
+        `${
+          getConfig().publicRuntimeConfig.WEB_URL
+        }/api/weather/daily?latitude=${latitude}&longitude=${longitude}`
       );
       if (weatherResponse.ok) {
         const weatherJson: IWeatherDailyResponse = await weatherResponse.json();
@@ -143,7 +146,9 @@ const Home = () => {
   const getReverseGeocoding = useCallback(
     async (latitude: number, longitude: number) => {
       const reverseGeocodingResponse = await fetch(
-        `${process.env.WEB_URL}/api/map/reverseGeocoding?latitude=${latitude}&longitude=${longitude}`
+        `${
+          getConfig().publicRuntimeConfig.WEB_URL
+        }/api/map/reverseGeocoding?latitude=${latitude}&longitude=${longitude}`
       );
       if (reverseGeocodingResponse.ok) {
         const reverseGeocodingJson: IMapReverseGeocodingResponse =

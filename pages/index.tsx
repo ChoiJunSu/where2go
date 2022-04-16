@@ -45,7 +45,7 @@ interface IPlace {
   };
 }
 
-const placeList: Array<IPlace> = [
+const mockPlaceList: Array<IPlace> = [
   {
     name: "길상사",
     description: "최고급 요정에서 도심속 도량으로 환골탈퇴",
@@ -121,6 +121,7 @@ const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const mapRef = useRef<naver.maps.Map>();
   const [markerList, setMarkerList] = useState<Array<naver.maps.Marker>>();
+  const [placeList, setPlaceList] = useState<Array<IPlace>>([]);
   const [addressName, setAddressName] = useState<string>();
   const [todayWeather, setTodayWeather] = useState<IDailyWeather>();
   const [tomorrowWeather, setTomorrowWeather] = useState<IDailyWeather>();
@@ -161,9 +162,12 @@ const Home = () => {
         marker.setMap(null);
       });
       // fetch place list
+      const newPlaceList = mockPlaceList;
+      // update place list
+      setPlaceList(newPlaceList);
       // generate new marker list
       const newMarkerList: Array<naver.maps.Marker> = [];
-      placeList.map((place) => {
+      newPlaceList.map((place) => {
         newMarkerList.push(
           new naver.maps.Marker({
             position: new naver.maps.LatLng(
@@ -175,7 +179,6 @@ const Home = () => {
         );
       });
       setMarkerList(newMarkerList);
-      console.log(newMarkerList);
     },
     [markerList]
   );

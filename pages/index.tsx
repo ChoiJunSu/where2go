@@ -64,7 +64,7 @@ const mockPlaceList: Array<IPlace> = [
     description:
       "순환산책로가 조성되어 있고 아름다운 풍경으로 유명한 장소이다.",
     facility: {
-      parking: 50,
+      parking: 100,
       toilet: true,
     },
     position: {
@@ -77,7 +77,7 @@ const mockPlaceList: Array<IPlace> = [
     description: "물과 관련된 다양한 체험프로그램이 있는 물누리체험관",
     facility: {
       parking: 50,
-      toilet: true,
+      toilet: false,
     },
     position: {
       latitude: 37.3213650505,
@@ -89,7 +89,7 @@ const mockPlaceList: Array<IPlace> = [
     description:
       "계명산과 송추계곡 등의 우수한 자연경관과 양주시립장욱진미술관, 가나아트파크, 송암스페이스센터 등 풍부한 문화예술체험을 동시에 즐길 수 있음",
     facility: {
-      parking: 50,
+      parking: 200,
       toilet: true,
     },
     position: {

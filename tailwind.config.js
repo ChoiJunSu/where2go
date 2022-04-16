@@ -4,7 +4,13 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: "#2aa090",
+        "primary-dark": "#23877a",
+      },
+    },
+    fontFamily: { sans: ["Pretendard Variable"] },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/line-clamp")],
 };

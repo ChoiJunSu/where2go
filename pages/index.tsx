@@ -129,7 +129,7 @@ const Home = () => {
   const getDailyWeather = useCallback(
     async (latitude: number, longitude: number) => {
       const weatherResponse = await fetch(
-        `api/weather/daily?latitude=${latitude}&longitude=${longitude}`
+        `${process.env.WEB_URL}/api/weather/daily?latitude=${latitude}&longitude=${longitude}`
       );
       if (weatherResponse.ok) {
         const weatherJson: IWeatherDailyResponse = await weatherResponse.json();
@@ -143,7 +143,7 @@ const Home = () => {
   const getReverseGeocoding = useCallback(
     async (latitude: number, longitude: number) => {
       const reverseGeocodingResponse = await fetch(
-        `api/map/reverseGeocoding?latitude=${latitude}&longitude=${longitude}`
+        `${process.env.WEB_URL}/api/map/reverseGeocoding?latitude=${latitude}&longitude=${longitude}`
       );
       if (reverseGeocodingResponse.ok) {
         const reverseGeocodingJson: IMapReverseGeocodingResponse =

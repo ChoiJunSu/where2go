@@ -22,7 +22,6 @@ import {
   WiDaySunny,
   WiDayThunderstorm,
 } from "react-icons/wi";
-import map from "react-map-gl/src/components/map";
 
 const navigation = [
   { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
@@ -192,7 +191,7 @@ const Home = () => {
       await getReverseGeocoding(latitude, longitude);
       // open marker
     },
-    [getDailyWeather, getReverseGeocoding, markerList]
+    [getDailyWeather, getReverseGeocoding]
   );
 
   useEffect(() => {
@@ -229,7 +228,7 @@ const Home = () => {
         );
       })();
     });
-  }, [getDailyWeather, getReverseGeocoding]);
+  }, [searchPlace, getDailyWeather, getReverseGeocoding]);
 
   return (
     <>

@@ -213,7 +213,6 @@ const Home = () => {
           mapRef.current,
           "dragend",
           async (event: naver.maps.PointerEvent) => {
-            await searchPlace();
             const { y, x } = event.coord;
             await getDailyWeather(y, x);
             await getReverseGeocoding(y, x);

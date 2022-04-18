@@ -334,7 +334,7 @@ const Home = () => {
           <div className="flex flex-col flex-grow p-6 overflow-y-auto">
             {/* Logo */}
             <div className="flex items-center flex-shrink-0">
-              <span className="text-3xl font-bold text-primary">어디갈까</span>
+              <span className="text-3xl font-bold text-primary">어디가지</span>
             </div>
 
             {/* Search box */}

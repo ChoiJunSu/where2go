@@ -22,7 +22,7 @@ import {
   WiDaySunny,
   WiDayThunderstorm,
 } from "react-icons/wi";
-import getConfig from "next/config";
+import Head from "next/head";
 
 const navigation = [
   { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
@@ -235,6 +235,9 @@ const Home = () => {
 
   return (
     <>
+      <Head>
+        <meta name="referrer" content="unsafe-url" />
+      </Head>
       {/* Naver map api */}
       <Script
         src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=1jpfqh75nm"

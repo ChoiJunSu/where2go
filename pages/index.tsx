@@ -142,18 +142,13 @@ const Home = () => {
 
   const getReverseGeocoding = useCallback(
     async (latitude: number, longitude: number) => {
-      try {
-        const reverseGeocodingResponse = await fetch(
-          `/api/map/reverseGeocoding?latitude=${latitude}&longitude=${longitude}`
-        );
-        console.log("within fetch", reverseGeocodingResponse);
-        if (reverseGeocodingResponse.ok) {
-          const reverseGeocodingJson: IMapReverseGeocodingResponse =
-            await reverseGeocodingResponse.json();
-          setAddressName(reverseGeocodingJson.name);
-        }
-      } catch (e) {
-        console.log("error", e);
+      const reverseGeocodingResponse = await fetch(
+        `/api/map/reverseGeocoding?latitude=${latitude}&longitude=${longitude}`
+      );
+      if (reverseGeocodingResponse.ok) {
+        const reverseGeocodingJson: IMapReverseGeocodingResponse =
+          await reverseGeocodingResponse.json();
+        setAddressName(reverseGeocodingJson.name);
       }
     },
     []

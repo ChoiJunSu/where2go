@@ -46,13 +46,13 @@ export default async function handler(
           region: { area1, area2, area3 },
         }: IReverseGeocodingResult) => {
           if (name === "legalcode")
-            res
+            return res
               .status(200)
               .json({ name: `${area1.name} ${area2.name} ${area3.name}` });
         }
       );
     }
 
-    res.status(400);
+    return res.status(400);
   }
 }

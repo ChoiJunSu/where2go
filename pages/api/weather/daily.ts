@@ -43,9 +43,9 @@ export default async function handler(
         if (index === 1) tomorrow = day;
       });
 
-      res.status(200).json({ today: today!, tomorrow: tomorrow! });
+      return res.status(200).json({ today: today!, tomorrow: tomorrow! });
     }
 
-    res.status(400);
+    return res.status(400);
   }
 }

@@ -9,7 +9,6 @@ import {
   UsersIcon,
   XIcon,
 } from "@heroicons/react/outline";
-import { SearchIcon } from "@heroicons/react/solid";
 import Script from "next/script";
 import { IMapReverseGeocodingResponse } from "@api/map/reverseGeocoding";
 import { IDailyWeather, IWeatherDailyResponse } from "@api/weather/daily";
@@ -22,6 +21,10 @@ import {
   WiDaySunny,
   WiDayThunderstorm,
 } from "react-icons/wi";
+import { API, graphqlOperation } from "aws-amplify";
+import { listPlaces } from "@src/graphql/queries";
+import { GraphQLResult } from "@aws-amplify/api-graphql";
+import { Place } from "@src/API";
 
 const navigation = [
   { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
@@ -32,96 +35,31 @@ const navigation = [
   { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
 ];
 
-interface IPlace {
-  name: string;
-  description: string;
-  facility: {
-    parking: number;
-    toilet: boolean;
-  };
-  position: {
-    latitude: number;
-    longitude: number;
-  };
-}
-
-const mockPlaceList: Array<IPlace> = [
-  {
-    name: "길상사",
-    description: "최고급 요정에서 도심속 도량으로 환골탈퇴",
-    facility: {
-      parking: 50,
-      toilet: true,
-    },
-    position: {
-      latitude: 37.59895542,
-      longitude: 126.9943663,
-    },
-  },
-  {
-    name: "반월호수",
-    description:
-      "순환산책로가 조성되어 있고 아름다운 풍경으로 유명한 장소이다.",
-    facility: {
-      parking: 100,
-      toilet: true,
-    },
-    position: {
-      latitude: 37.32458238,
-      longitude: 126.8899642222,
-    },
-  },
-  {
-    name: "물누리체험관",
-    description: "물과 관련된 다양한 체험프로그램이 있는 물누리체험관",
-    facility: {
-      parking: 50,
-      toilet: false,
-    },
-    position: {
-      latitude: 37.3213650505,
-      longitude: 126.8996775289,
-    },
-  },
-  {
-    name: "장흥관광지",
-    description:
-      "계명산과 송추계곡 등의 우수한 자연경관과 양주시립장욱진미술관, 가나아트파크, 송암스페이스센터 등 풍부한 문화예술체험을 동시에 즐길 수 있음",
-    facility: {
-      parking: 200,
-      toilet: true,
-    },
-    position: {
-      latitude: 37.73281632,
-      longitude: 126.9492504,
-    },
-  },
-];
-
 const weatherMainMapper = (main: string) => {
   switch (main) {
     case "Thunderstorm":
-      return <WiDayThunderstorm className="w-8 h-8" />;
+      return <WiDayThunderstorm className="w-8 h-8 text-gray-600" />;
     case "Drizzle":
-      return <WiDayRainMix className="w-8 h-8" />;
+      return <WiDayRainMix className="w-8 h-8 text-gray-600" />;
     case "Rain":
-      return <WiDayRain className="w-8 h-8" />;
+      return <WiDayRain className="w-8 h-8 text-gray-600" />;
     case "Snow":
-      return <WiDaySnow className="w-8 h-8" />;
+      return <WiDaySnow className="w-8 h-8 text-gray-600" />;
     case "Clear":
-      return <WiDaySunny className="w-8 h-8" />;
+      return <WiDaySunny className="w-8 h-8 text-orange-600" />;
     case "Clouds":
-      return <WiDayCloudy className="w-8 h-8" />;
+      return <WiDayCloudy className="w-8 h-8 text-gray-600" />;
     default:
-      return <WiCloud className="w-8 h-8" />;
+      return <WiCloud className="w-8 h-8 text-gray-600" />;
   }
 };
 
 const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const mapRef = useRef<naver.maps.Map>();
+  const searchPlaceWordRef = useRef<HTMLInputElement | null>(null);
   const [markerList, setMarkerList] = useState<Array<naver.maps.Marker>>();
-  const [placeList, setPlaceList] = useState<Array<IPlace>>([]);
+  const [placeList, setPlaceList] = useState<Array<Place>>([]);
   const [addressName, setAddressName] = useState<string>();
   const [todayWeather, setTodayWeather] = useState<IDailyWeather>();
   const [tomorrowWeather, setTomorrowWeather] = useState<IDailyWeather>();
@@ -154,34 +92,65 @@ const Home = () => {
     []
   );
 
-  const searchPlace = useCallback(
-    async (word?: string) => {
-      if (!mapRef.current) return;
-      // destroy old marker list
-      markerList?.map((marker) => {
-        marker.setMap(null);
-      });
-      // fetch place list
-      const newPlaceList = mockPlaceList;
-      // update place list
-      setPlaceList(newPlaceList);
-      // generate new marker list
-      const newMarkerList: Array<naver.maps.Marker> = [];
-      newPlaceList.map((place) => {
-        newMarkerList.push(
-          new naver.maps.Marker({
-            position: new naver.maps.LatLng(
-              place.position.latitude,
-              place.position.longitude
-            ),
-            map: mapRef.current,
-          })
-        );
-      });
-      setMarkerList(newMarkerList);
-    },
-    [markerList]
-  );
+  const searchPlaceByWord = useCallback(async () => {
+    if (
+      !mapRef.current ||
+      !searchPlaceWordRef.current ||
+      !searchPlaceWordRef.current.value
+    )
+      return;
+    // destroy old marker list
+    markerList?.map((marker) => {
+      marker.setMap(null);
+    });
+    // fetch place list
+    const listPlacesResult = (await API.graphql(
+      graphqlOperation(listPlaces, {
+        name: searchPlaceWordRef.current.value,
+      })
+    )) as GraphQLResult<{ listPlaces: Array<Place> }>;
+    if (!listPlacesResult.data || !listPlacesResult.data.listPlaces) return;
+    const newPlaceList = listPlacesResult.data.listPlaces;
+    // update place list
+    setPlaceList(newPlaceList);
+    // generate new marker list
+    const newMarkerList: Array<naver.maps.Marker> = [];
+    newPlaceList.map((place) => {
+      newMarkerList.push(
+        new naver.maps.Marker({
+          position: new naver.maps.LatLng(place.latitude, place.longitude),
+          map: mapRef.current,
+        })
+      );
+    });
+    setMarkerList(newMarkerList);
+  }, [markerList]);
+
+  const searchPlaceByPosition = useCallback(async () => {
+    if (!mapRef.current) return;
+    // destroy old marker list
+    markerList?.map((marker) => {
+      marker.setMap(null);
+    });
+    // // fetch place list
+    // const newPlaceList = mockPlaceList;
+    // // update place list
+    // setPlaceList(newPlaceList);
+    // // generate new marker list
+    // const newMarkerList: Array<naver.maps.Marker> = [];
+    // newPlaceList.map((place) => {
+    //   newMarkerList.push(
+    //     new naver.maps.Marker({
+    //       position: new naver.maps.LatLng(
+    //         place.position.latitude,
+    //         place.position.longitude
+    //       ),
+    //       map: mapRef.current,
+    //     })
+    //   );
+    // });
+    // setMarkerList(newMarkerList);
+  }, [markerList]);
 
   const selectPlace = useCallback(
     async (latitude: number, longitude: number) => {
@@ -216,6 +185,7 @@ const Home = () => {
             const { y, x } = event.coord;
             await getDailyWeather(y, x);
             await getReverseGeocoding(y, x);
+            await searchPlaceByPosition();
           }
         );
         // get daily weather
@@ -230,7 +200,7 @@ const Home = () => {
         );
       })();
     });
-  }, [searchPlace, getDailyWeather, getReverseGeocoding]);
+  }, []);
 
   return (
     <>
@@ -338,9 +308,22 @@ const Home = () => {
 
             {/* Search box */}
             <div className="mt-10">
-              <div className="w-full h-10 border-2 border-primary rounded-lg flex justify-between items-center p-4">
-                <span className="text-gray-500">장소 이름으로 검색</span>
-                <SearchIcon className="w-6 h-6 text-primary" />
+              <div className="flex gap-2 justify-between">
+                <input
+                  ref={searchPlaceWordRef}
+                  type="text"
+                  placeholder="장소 이름으로 검색"
+                  className="appearance-none w-full h-10 border-2 border-primary focus:outline-primary-dark rounded-lg flex justify-between items-center p-4"
+                />
+                <button
+                  onClick={async () => {
+                    await searchPlaceByWord();
+                  }}
+                  type="button"
+                  className="shrink-0 px-4 py-2 rounded-lg text-white bg-primary hover:bg-primary-dark"
+                >
+                  검색
+                </button>
               </div>
               <div className="mt-2 relative">
                 <div className="absolute inset-0 flex items-center">
@@ -352,7 +335,7 @@ const Home = () => {
               </div>
               <button
                 onClick={async () => {
-                  await searchPlace();
+                  await searchPlaceByPosition();
                 }}
                 className="mt-2 w-full h-10 bg-primary hover:bg-primary-dark rounded-lg flex justify-center items-center p-4"
               >
@@ -403,10 +386,7 @@ const Home = () => {
                 <button
                   key={index}
                   onClick={() => {
-                    selectPlace(
-                      place.position.latitude,
-                      place.position.longitude
-                    );
+                    selectPlace(place.latitude, place.longitude);
                   }}
                   className="w-full h-36 py-4 flex flex-col justify-between text-left hover:bg-gray-100"
                 >
@@ -421,11 +401,11 @@ const Home = () => {
                   <div className="text-lg">
                     <span className="text-gray-900">주차</span>{" "}
                     <span className="text-primary">
-                      {place.facility.parking}대
+                      {place.parking ? `${place.parking}대` : "미확인"}
                     </span>{" "}
                     <span className="text-gray-900">화장실 </span>{" "}
                     <span className="text-primary">
-                      {place.facility.toilet ? "있음" : "없음"}
+                      {place.toilet ? "있음" : "없음"}
                     </span>
                   </div>
                 </button>

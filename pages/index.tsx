@@ -385,8 +385,8 @@ const Home = () => {
               {placeList.map((place, index) => (
                 <button
                   key={index}
-                  onClick={() => {
-                    selectPlace(place.latitude, place.longitude);
+                  onClick={async () => {
+                    await selectPlace(place.latitude, place.longitude);
                   }}
                   className="w-full h-36 py-4 flex flex-col justify-between text-left hover:bg-gray-100"
                 >

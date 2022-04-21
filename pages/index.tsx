@@ -403,7 +403,7 @@ const Home = () => {
                     <span className="text-primary">
                       {place.parking ? `${place.parking}대` : "미확인"}
                     </span>{" "}
-                    <span className="text-gray-900">화장실 </span>{" "}
+                    <span className="text-gray-900">화장실</span>{" "}
                     <span className="text-primary">
                       {place.toilet ? "있음" : "없음"}
                     </span>

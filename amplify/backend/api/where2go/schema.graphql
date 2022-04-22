@@ -46,7 +46,7 @@ type Mutation {
 
 type Query {
   getPlace(id: Int!): Place
-  listPlaces(name: String): [Place]
+  listPlaces(name: String, neLat: Float, neLng: Float, swLat: Float, swLng: Float): [Place]
 }
 
 type Subscription {

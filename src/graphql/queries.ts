@@ -18,8 +18,20 @@ export const getPlace = /* GraphQL */ `
   }
 `;
 export const listPlaces = /* GraphQL */ `
-  query ListPlaces($name: String) {
-    listPlaces(name: $name) {
+  query ListPlaces(
+    $name: String
+    $neLat: Float
+    $neLng: Float
+    $swLat: Float
+    $swLng: Float
+  ) {
+    listPlaces(
+      name: $name
+      neLat: $neLat
+      neLng: $neLng
+      swLat: $swLat
+      swLng: $swLng
+    ) {
       id
       name
       description

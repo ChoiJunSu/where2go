@@ -1,4 +1,11 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import {
+  createElement,
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
   CalendarIcon,
@@ -14,12 +21,11 @@ import { IMapReverseGeocodingResponse } from "@api/map/reverseGeocoding";
 import { IDailyWeather, IWeatherDailyResponse } from "@api/weather/daily";
 import {
   WiCloud,
-  WiDayCloudy,
-  WiDayRain,
-  WiDayRainMix,
-  WiDaySnow,
   WiDaySunny,
-  WiDayThunderstorm,
+  WiRain,
+  WiRainMix,
+  WiSnow,
+  WiThunderstorm,
 } from "react-icons/wi";
 import { API, graphqlOperation } from "aws-amplify";
 import { listPlaces } from "@src/graphql/queries";
@@ -38,17 +44,17 @@ const navigation = [
 const weatherMainMapper = (main: string) => {
   switch (main) {
     case "Thunderstorm":
-      return <WiDayThunderstorm className="w-8 h-8 text-gray-600" />;
+      return <WiThunderstorm className="w-8 h-8 text-gray-600" />;
     case "Drizzle":
-      return <WiDayRainMix className="w-8 h-8 text-gray-600" />;
+      return <WiRainMix className="w-8 h-8 text-gray-600" />;
     case "Rain":
-      return <WiDayRain className="w-8 h-8 text-gray-600" />;
+      return <WiRain className="w-8 h-8 text-gray-600" />;
     case "Snow":
-      return <WiDaySnow className="w-8 h-8 text-gray-600" />;
+      return <WiSnow className="w-8 h-8 text-gray-600" />;
     case "Clear":
       return <WiDaySunny className="w-8 h-8 text-orange-600" />;
     case "Clouds":
-      return <WiDayCloudy className="w-8 h-8 text-gray-600" />;
+      return <WiCloud className="w-8 h-8 text-sky-700" />;
     default:
       return <WiCloud className="w-8 h-8 text-gray-600" />;
   }
@@ -57,8 +63,11 @@ const weatherMainMapper = (main: string) => {
 const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const mapRef = useRef<naver.maps.Map>();
+  const infoWindowRef = useRef<naver.maps.InfoWindow>();
   const searchPlaceWordRef = useRef<HTMLInputElement | null>(null);
-  const [markerList, setMarkerList] = useState<Array<naver.maps.Marker>>();
+  const [markerList, setMarkerList] = useState<
+    Record<string, naver.maps.Marker>
+  >({});
   const [placeList, setPlaceList] = useState<Array<Place>>([]);
   const [addressName, setAddressName] = useState<string>();
   const [todayWeather, setTodayWeather] = useState<IDailyWeather>();
@@ -92,6 +101,55 @@ const Home = () => {
     []
   );
 
+  const updateMarkerList = useCallback(
+    (newPlaceList: Array<Place>) => {
+      if (!mapRef.current || !infoWindowRef.current) return;
+      // destroy old marker list
+      Object.keys(markerList).map((key) => {
+        markerList[key].setMap(null);
+      });
+      // generate new marker list
+      const newMarkerList: Record<string, naver.maps.Marker> = {};
+      newPlaceList.map((place) => {
+        const marker = new naver.maps.Marker({
+          position: new naver.maps.LatLng(place.latitude, place.longitude),
+          map: mapRef.current,
+          animation: naver.maps.Animation.DROP,
+          title: place.name,
+          icon: {
+            content: `
+              <div style="padding: 0.5em; color: white; background-color: #2aa090; border-radius: 10px; box-shadow: 2px 2px 4px grey; white-space: nowrap; overflow: hidden;"
+                onmouseover="this.style.backgroundColor='#23877a'"
+                onmouseleave="this.style.backgroundColor='#2aa090'">
+                    ${place.name}
+              </div>`,
+          },
+        });
+        naver.maps.Event.addListener(marker, "click", () => {
+          marker.setZIndex(1);
+          infoWindowRef.current!.setContent(`
+            <div style="padding: 0.5em; max-width: 15em">
+            <span style="font-weight: bold">${place.name}</span>
+            <p style="color: grey">${place.description}</p>
+            <span>주차 </span>
+            <span style="color: #2aa090">${
+              place.parking ? `${place.parking}대 ` : "미확인 "
+            }</span>
+            <span>화장실 </span>
+            <span style="color: #2aa090">${
+              place.toilet ? "있음" : "없음"
+            }</span>
+          </div>`);
+          infoWindowRef.current!.open(mapRef.current!, marker);
+        });
+        newMarkerList[place.name] = marker;
+      });
+      // set new marker list
+      setMarkerList(newMarkerList);
+    },
+    [markerList]
+  );
+
   const searchPlaceByWord = useCallback(async () => {
     if (
       !mapRef.current ||
@@ -99,10 +157,8 @@ const Home = () => {
       !searchPlaceWordRef.current.value
     )
       return;
-    // destroy old marker list
-    markerList?.map((marker) => {
-      marker.setMap(null);
-    });
+    // close info window
+    infoWindowRef.current?.close();
     // fetch place list
     const listPlacesResult = (await API.graphql(
       graphqlOperation(listPlaces, {
@@ -111,95 +167,104 @@ const Home = () => {
     )) as GraphQLResult<{ listPlaces: Array<Place> }>;
     if (!listPlacesResult.data || !listPlacesResult.data.listPlaces) return;
     const newPlaceList = listPlacesResult.data.listPlaces;
+    // change map's center and zoom: center of South Korea
+    mapRef.current.setCenter(new naver.maps.LatLng(36.3491175, 127.7615482));
+    mapRef.current.setZoom(7);
     // update place list
     setPlaceList(newPlaceList);
-    // generate new marker list
-    const newMarkerList: Array<naver.maps.Marker> = [];
-    newPlaceList.map((place) => {
-      newMarkerList.push(
-        new naver.maps.Marker({
-          position: new naver.maps.LatLng(place.latitude, place.longitude),
-          map: mapRef.current,
-        })
-      );
-    });
-    setMarkerList(newMarkerList);
-  }, [markerList]);
+    // update marker list
+    updateMarkerList(newPlaceList);
+  }, [updateMarkerList]);
 
   const searchPlaceByPosition = useCallback(async () => {
     if (!mapRef.current) return;
-    // destroy old marker list
-    markerList?.map((marker) => {
-      marker.setMap(null);
-    });
-    // // fetch place list
-    // const newPlaceList = mockPlaceList;
-    // // update place list
-    // setPlaceList(newPlaceList);
-    // // generate new marker list
-    // const newMarkerList: Array<naver.maps.Marker> = [];
-    // newPlaceList.map((place) => {
-    //   newMarkerList.push(
-    //     new naver.maps.Marker({
-    //       position: new naver.maps.LatLng(
-    //         place.position.latitude,
-    //         place.position.longitude
-    //       ),
-    //       map: mapRef.current,
-    //     })
-    //   );
-    // });
-    // setMarkerList(newMarkerList);
-  }, [markerList]);
+    // close info window
+    infoWindowRef.current?.close();
+    // get map boundary
+    const bounds = mapRef.current.getBounds() as naver.maps.LatLngBounds;
+    // fetch place list
+    const listPlacesResult = (await API.graphql(
+      graphqlOperation(listPlaces, {
+        neLat: bounds.getNE().lat(),
+        neLng: bounds.getNE().lng(),
+        swLat: bounds.getSW().lat(),
+        swLng: bounds.getSW().lng(),
+      })
+    )) as GraphQLResult<{ listPlaces: Array<Place> }>;
+    if (!listPlacesResult.data || !listPlacesResult.data.listPlaces) return;
+    const newPlaceList = listPlacesResult.data.listPlaces;
+    // update place list
+    setPlaceList(newPlaceList);
+    // update marker list
+    updateMarkerList(newPlaceList);
+  }, [updateMarkerList]);
 
   const selectPlace = useCallback(
-    async (latitude: number, longitude: number) => {
+    async (place: Place) => {
       if (!mapRef.current) return;
-      // move map's center
-      const position = new naver.maps.LatLng(latitude, longitude);
+      // move map's center and zoom
+      const position = new naver.maps.LatLng(place.latitude, place.longitude);
       mapRef.current.setCenter(position);
+      mapRef.current.setZoom(14);
       // update weather and address
-      await getDailyWeather(latitude, longitude);
-      await getReverseGeocoding(latitude, longitude);
-      // open marker
+      await getDailyWeather(place.latitude, place.longitude);
+      await getReverseGeocoding(place.latitude, place.longitude);
+      // open info window
+      naver.maps.Event.trigger(markerList[place.name], "click");
     },
-    [getDailyWeather, getReverseGeocoding]
+    [getDailyWeather, getReverseGeocoding, markerList]
   );
 
   useEffect(() => {
+    // init center position: Seoul
+    const centerPosition = {
+      latitude: 37.564214,
+      longitude: 127.001699,
+    };
     // get current geolocation
     navigator.geolocation.getCurrentPosition((position) => {
-      (async () => {
-        // generate map
-        mapRef.current = new naver.maps.Map("map", {
-          center: new naver.maps.LatLng(
-            position.coords.latitude,
-            position.coords.longitude
-          ),
-        });
-        // add event listener
-        naver.maps.Event.addListener(
-          mapRef.current,
-          "dragend",
-          async (event: naver.maps.PointerEvent) => {
-            const { y, x } = event.coord;
-            await getDailyWeather(y, x);
-            await getReverseGeocoding(y, x);
-            await searchPlaceByPosition();
-          }
-        );
-        // get daily weather
-        await getDailyWeather(
-          position.coords.latitude,
-          position.coords.longitude
-        );
-        // get reverse geocoding
-        await getReverseGeocoding(
-          position.coords.latitude,
-          position.coords.longitude
-        );
-      })();
+      centerPosition.latitude = position.coords.latitude;
+      centerPosition.longitude = position.coords.longitude;
     });
+    (async () => {
+      // generate map
+      mapRef.current = new naver.maps.Map("map", {
+        center: new naver.maps.LatLng(
+          centerPosition.latitude,
+          centerPosition.longitude
+        ),
+        zoom: 11,
+      });
+      // generate info window
+      infoWindowRef.current = new naver.maps.InfoWindow({
+        content: "",
+        borderColor: "#2aa090",
+        borderWidth: 2,
+        pixelOffset: new naver.maps.Point(30, -10),
+        disableAnchor: true,
+      });
+      // add event listener for click
+      naver.maps.Event.addListener(mapRef.current, "click", () => {
+        infoWindowRef.current?.close();
+      });
+      // add event listener for drag end
+      naver.maps.Event.addListener(
+        mapRef.current,
+        "dragend",
+        async (event: naver.maps.PointerEvent) => {
+          const { y, x } = event.coord;
+          await getDailyWeather(y, x);
+          await getReverseGeocoding(y, x);
+        }
+      );
+      // get daily weather
+      await getDailyWeather(centerPosition.latitude, centerPosition.longitude);
+      // get reverse geocoding
+      await getReverseGeocoding(
+        centerPosition.latitude,
+        centerPosition.longitude
+      );
+    })();
   }, []);
 
   return (
@@ -308,23 +373,23 @@ const Home = () => {
 
             {/* Search box */}
             <div className="mt-10">
-              <div className="flex gap-2 justify-between">
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  await searchPlaceByWord();
+                }}
+                className="flex gap-2 justify-between"
+              >
                 <input
                   ref={searchPlaceWordRef}
                   type="text"
                   placeholder="장소 이름으로 검색"
                   className="appearance-none w-full h-10 border-2 border-primary focus:outline-primary-dark rounded-lg flex justify-between items-center p-4"
                 />
-                <button
-                  onClick={async () => {
-                    await searchPlaceByWord();
-                  }}
-                  type="button"
-                  className="shrink-0 px-4 py-2 rounded-lg text-white bg-primary hover:bg-primary-dark"
-                >
+                <button className="shrink-0 px-4 py-2 rounded-lg text-white bg-primary hover:bg-primary-dark">
                   검색
                 </button>
-              </div>
+              </form>
               <div className="mt-2 relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300" />
@@ -386,7 +451,7 @@ const Home = () => {
                 <button
                   key={index}
                   onClick={async () => {
-                    await selectPlace(place.latitude, place.longitude);
+                    await selectPlace(place);
                   }}
                   className="w-full h-36 py-4 flex flex-col justify-between text-left hover:bg-gray-100"
                 >

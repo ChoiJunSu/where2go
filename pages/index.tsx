@@ -16,10 +16,11 @@ import {
   ArrowLeftIcon,
   ArrowUpIcon,
 } from "@heroicons/react/outline";
+import Head from "next/head";
 
 const Home = () => {
   const [mobileSidebarState, setMobileSidebarState] = useState<
-    "full" | "half" | "min" | "hidden"
+    "full" | "min" | "hidden"
   >("hidden");
   const mapRef = useRef<naver.maps.Map>();
   const infoWindowRef = useRef<naver.maps.InfoWindow>();
@@ -138,7 +139,7 @@ const Home = () => {
     // update marker list
     updateMarkerList(newPlaceList);
     // open mobile sidebar
-    setMobileSidebarState("half");
+    setMobileSidebarState("min");
   }, [updateMarkerList]);
 
   const searchPlaceByPosition = useCallback(async () => {
@@ -163,7 +164,7 @@ const Home = () => {
     // update marker list
     updateMarkerList(newPlaceList);
     // open mobile sidebar
-    setMobileSidebarState("half");
+    setMobileSidebarState("min");
   }, [updateMarkerList]);
 
   const selectPlace = useCallback(
@@ -237,162 +238,143 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="h-screen">
-      {/* Viewport fit for safe area */}
-      <meta name="viewport" content="initial-scale=1, viewport-fit=cover" />
+    <>
+      <Head>
+        {/* Viewport fit for safe area */}
+        <meta name="viewport" content="initial-scale=1, viewport-fit=cover" />
+      </Head>
 
-      {/* Naver map api */}
-      <Script
-        src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=1jpfqh75nm"
-        strategy="beforeInteractive"
-      />
+      <div className="h-screen">
+        {/* Naver map api */}
+        <Script
+          src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=1jpfqh75nm"
+          strategy="beforeInteractive"
+        />
 
-      {/* Sidebar for desktop */}
-      <div className="hidden md:flex flex-col w-96 h-full fixed inset-y-0">
-        <div className="h-full flex flex-col flex-grow p-6">
-          {/* Logo */}
-          <div className="flex items-center flex-shrink-0">
-            <span className="text-3xl font-bold text-primary">어디가지</span>
-          </div>
-
-          {/* Search box */}
-          <div className="mt-10">
-            <SearchPlaceByWordBox
-              searchPlaceByWord={searchPlaceByWord}
-              searchPlaceWordRef={searchPlaceWordRef}
-            />
-            <div className="mt-2 relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm sm:text-lg">
-                <span className="px-2 bg-white text-gray-500">또는</span>
-              </div>
+        {/* Sidebar for desktop */}
+        <div className="hidden md:flex flex-col w-96 h-full fixed inset-y-0">
+          <div className="h-full flex flex-col flex-grow p-6">
+            {/* Logo */}
+            <div className="flex items-center flex-shrink-0">
+              <span className="text-3xl font-bold text-primary">어디가지</span>
             </div>
-            <div className="mt-2">
-              <SearchPlaceByPositionBox
-                searchPlaceByPosition={searchPlaceByPosition}
-              />
-            </div>
-          </div>
 
-          {/* Weather box */}
-          {addressName && todayWeather && tomorrowWeather && (
+            {/* Search box */}
             <div className="mt-10">
-              <WeatherBox
-                addressName={addressName}
-                todayWeather={todayWeather}
-                tomorrowWeather={tomorrowWeather}
-              />
-            </div>
-          )}
-
-          {/* Place list */}
-          <div className="mt-10 h-full">
-            <PlaceListBox placeList={placeList} selectPlace={selectPlace} />
-          </div>
-        </div>
-      </div>
-
-      <div className="relative md:ml-96 flex-1 max-h-full">
-        {mobileSidebarState === "hidden" && (
-          <>
-            {/* Search by word box for mobile */}
-            <div className="md:hidden w-full px-4 absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
               <SearchPlaceByWordBox
                 searchPlaceByWord={searchPlaceByWord}
                 searchPlaceWordRef={searchPlaceWordRef}
               />
-            </div>
-
-            {/* Search by position box for mobile */}
-            <div className="md:hidden w-full px-4 absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
-              <SearchPlaceByPositionBox
-                searchPlaceByPosition={searchPlaceByPosition}
-              />
-            </div>
-          </>
-        )}
-
-        {/* Sidebar for mobile */}
-        {mobileSidebarState !== "hidden" && (
-          <>
-            {/* Back button */}
-            <button
-              onClick={() => {
-                setMobileSidebarState("hidden");
-              }}
-              className="md:hidden absolute z-10 top-4 left-4 bg-white p-2 rounded-full shadow-lg"
-            >
-              <ArrowLeftIcon className="w-8 h-8 text-primary" />
-            </button>
-
-            {/* Place list box */}
-            <div
-              className={`md:hidden absolute z-10 bottom-0 w-full flex flex-col ${
-                mobileSidebarState === "full"
-                  ? "h-5/6"
-                  : mobileSidebarState === "half"
-                  ? "h-1/2"
-                  : mobileSidebarState === "min"
-                  ? "h-1/5"
-                  : ""
-              }`}
-            >
-              {/* Up/Down button group */}
-              <div className="w-32 mx-auto flex">
-                {/* Up button */}
-                <button
-                  onClick={() => {
-                    switch (mobileSidebarState) {
-                      case "half": {
-                        setMobileSidebarState("full");
-                        break;
-                      }
-                      case "min": {
-                        setMobileSidebarState("half");
-                        break;
-                      }
-                    }
-                  }}
-                  className={`md:hidden w-12 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4 ${
-                    mobileSidebarState === "full" ? "hidden" : ""
-                  }`}
-                >
-                  <ArrowUpIcon className="w-8 h-8 text-primary" />
-                </button>
-
-                {/* Down button */}
-                <button
-                  onClick={() => {
-                    switch (mobileSidebarState) {
-                      case "full": {
-                        setMobileSidebarState("half");
-                        break;
-                      }
-                      case "half": {
-                        setMobileSidebarState("min");
-                        break;
-                      }
-                    }
-                  }}
-                  className={`md:hidden w-12 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4 ${
-                    mobileSidebarState === "min" ? "hidden" : ""
-                  }`}
-                >
-                  <ArrowDownIcon className="w-8 h-8 text-primary" />
-                </button>
+              <div className="mt-2 relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm sm:text-lg">
+                  <span className="px-2 bg-white text-gray-500">또는</span>
+                </div>
               </div>
+              <div className="mt-2">
+                <SearchPlaceByPositionBox
+                  searchPlaceByPosition={searchPlaceByPosition}
+                />
+              </div>
+            </div>
 
+            {/* Weather box */}
+            {addressName && todayWeather && tomorrowWeather && (
+              <div className="mt-10">
+                <WeatherBox
+                  addressName={addressName}
+                  todayWeather={todayWeather}
+                  tomorrowWeather={tomorrowWeather}
+                />
+              </div>
+            )}
+
+            {/* Place list */}
+            <div className="mt-10 h-full">
               <PlaceListBox placeList={placeList} selectPlace={selectPlace} />
             </div>
-          </>
-        )}
+          </div>
+        </div>
 
-        {/* Map box */}
-        <MapBox />
+        <div className="relative md:ml-96 flex-1 max-h-full">
+          {mobileSidebarState === "hidden" && (
+            <>
+              {/* Search by word box for mobile */}
+              <div className="md:hidden w-full px-4 absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+                <SearchPlaceByWordBox
+                  searchPlaceByWord={searchPlaceByWord}
+                  searchPlaceWordRef={searchPlaceWordRef}
+                />
+              </div>
+
+              {/* Search by position box for mobile */}
+              <div className="md:hidden w-full px-4 absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+                <SearchPlaceByPositionBox
+                  searchPlaceByPosition={searchPlaceByPosition}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Sidebar for mobile */}
+          {mobileSidebarState !== "hidden" && (
+            <>
+              {/* Back button */}
+              <button
+                onClick={() => {
+                  setMobileSidebarState("hidden");
+                }}
+                className="md:hidden absolute z-10 top-4 left-4 bg-white p-2 rounded-full shadow-lg"
+              >
+                <ArrowLeftIcon className="w-8 h-8 text-primary" />
+              </button>
+
+              {/* Place list box */}
+              <div
+                className={`md:hidden absolute z-10 bottom-0 w-full flex flex-col ${
+                  mobileSidebarState === "full"
+                    ? "h-5/6"
+                    : mobileSidebarState === "min"
+                    ? "h-1/5"
+                    : ""
+                }`}
+              >
+                {/* Up button */}
+                {mobileSidebarState === "min" && (
+                  <button
+                    onClick={() => {
+                      setMobileSidebarState("full");
+                    }}
+                    className="md:hidden w-12 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4"
+                  >
+                    <ArrowUpIcon className="w-8 h-8 text-primary" />
+                  </button>
+                )}
+
+                {/* Down button */}
+                {mobileSidebarState === "full" && (
+                  <button
+                    onClick={() => {
+                      setMobileSidebarState("min");
+                    }}
+                    className="md:hidden w-12 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4"
+                  >
+                    <ArrowDownIcon className="w-8 h-8 text-primary" />
+                  </button>
+                )}
+
+                <PlaceListBox placeList={placeList} selectPlace={selectPlace} />
+              </div>
+            </>
+          )}
+
+          {/* Map box */}
+          <MapBox />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

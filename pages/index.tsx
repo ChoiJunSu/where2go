@@ -240,11 +240,6 @@ const Home = () => {
 
   return (
     <>
-      <Head>
-        {/* Viewport fit for safe area */}
-        <meta name="viewport" content="initial-scale=1, viewport-fit=cover" />
-      </Head>
-
       <div className="h-screen-safe md:h-screen">
         {/* Naver map api */}
         <Script

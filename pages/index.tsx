@@ -238,6 +238,9 @@ const Home = () => {
 
   return (
     <div className="h-screen">
+      {/* Viewport fit for safe area */}
+      <meta name="viewport" content="initial-scale=1, viewport-fit=cover" />
+
       {/* Naver map api */}
       <Script
         src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=1jpfqh75nm"

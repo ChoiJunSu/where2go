@@ -244,7 +244,7 @@ const Home = () => {
         <meta name="viewport" content="initial-scale=1, viewport-fit=cover" />
       </Head>
 
-      <div className="h-screen-safe">
+      <div className="h-screen-safe md:h-screen">
         {/* Naver map api */}
         <Script
           src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=1jpfqh75nm"

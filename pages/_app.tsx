@@ -33,7 +33,7 @@ const defaultSeo = {
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
-      <DefaultSeo {...defaultSeo} />
+      {/*<DefaultSeo {...defaultSeo} />*/}
       <Component {...pageProps} />
     </>
   );

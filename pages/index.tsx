@@ -6,11 +6,11 @@ import { API, graphqlOperation } from "aws-amplify";
 import { listPlaces } from "@src/graphql/queries";
 import { GraphQLResult } from "@aws-amplify/api-graphql";
 import { Place } from "@src/API";
-import MapBox from "@src/components/MapBox";
-import SearchPlaceByWordBox from "@src/components/SearchPlaceByWordBox";
-import SearchPlaceByPositionBox from "@src/components/SearchPlaceByPositionBox";
-import WeatherBox from "@src/components/WeatherBox";
-import PlaceListBox from "@src/components/PlaceListBox";
+import MapBox from "@components/MapBox";
+import SearchPlaceByWordBox from "@components/SearchPlaceByWordBox";
+import SearchPlaceByPositionBox from "@components/SearchPlaceByPositionBox";
+import WeatherBox from "@components/WeatherBox";
+import PlaceListBox from "@components/PlaceListBox";
 import {
   ArrowDownIcon,
   ArrowLeftIcon,

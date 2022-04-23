@@ -23,7 +23,7 @@ const defaultSeo: DefaultSeoProps = {
       {
         url: `${PUBLIC_URL}/picnic.jpg`,
         width: 1920,
-        height: 2869,
+        height: 1440,
         alt: "피크닉",
       },
     ],

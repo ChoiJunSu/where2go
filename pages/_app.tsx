@@ -8,7 +8,7 @@ Amplify.configure({ ...config, ssr: true });
 
 const defaultSeo = {
   title: "어디가지 | 나들이 장소 찾기",
-  description: "주말에 놀러갈 나들이 장소 찾기",
+  description: "주말에 어디가지? 근교 여행지 알아보기",
   canonical: "https://main.d2l0whstfhxlrm.amplifyapp.com",
   openGraph: {
     type: "website",
@@ -16,6 +16,12 @@ const defaultSeo = {
     url: "https://main.d2l0whstfhxlrm.amplifyapp.com",
     title: "어디가지 | 나들이 장소 찾기",
     site_name: "어디가지",
+    images: [
+      {
+        url: "/images/picnic.jpg",
+        alt: "피크닉",
+      },
+    ],
   },
   twitter: {
     handle: "@handle",

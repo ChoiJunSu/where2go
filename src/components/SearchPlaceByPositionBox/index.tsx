@@ -9,9 +9,9 @@ const SearchPlaceByPositionBox = ({
         onClick={async () => {
           await searchPlaceByPosition();
         }}
-        className="w-full h-10 bg-primary hover:bg-primary-dark rounded-lg flex justify-center items-center p-4"
+        className="w-full h-12 bg-primary hover:bg-primary-dark rounded-md flex justify-center items-center p-4"
       >
-        <span className="text-white font-medium">
+        <span className="text-white text-lg font-medium">
           지금 보고있는 범위에서 검색
         </span>
       </button>

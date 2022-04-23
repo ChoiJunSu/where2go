@@ -12,12 +12,9 @@ import SearchPlaceByWordBox from "@components/SearchPlaceByWordBox";
 import SearchPlaceByPositionBox from "@components/SearchPlaceByPositionBox";
 import WeatherBox from "@components/WeatherBox";
 import PlaceListBox from "@components/PlaceListBox";
-import {
-  ArrowDownIcon,
-  ArrowLeftIcon,
-  ArrowUpIcon,
-} from "@heroicons/react/outline";
+import { ArrowLeftIcon } from "@heroicons/react/outline";
 import { isMobile } from "react-device-detect";
+import { COLOR } from "@src/constants";
 
 const Home = () => {
   const [mobileSidebarState, setMobileSidebarState] = useState<
@@ -79,9 +76,9 @@ const Home = () => {
           title: place.name,
           icon: {
             content: `
-              <div style="padding: 0.5em; color: white; background-color: #2aa090; border-radius: 10px; box-shadow: 2px 2px 4px grey; white-space: nowrap; overflow: hidden;"
-                onmouseover="this.style.backgroundColor='#23877a'"
-                onmouseleave="this.style.backgroundColor='#2aa090'">
+              <div style="padding: 0.5em 1em; font-weight: bold; color: black; background-color: white; border: solid; border-width: 3px; border-color: ${COLOR.PRIMARY}; border-radius: 20px; box-shadow: 2px 2px 4px gray; white-space: nowrap; overflow: hidden;"
+                onmouseover="this.style.backgroundColor='${COLOR.PRIMARY}'; this.style.color='white'"
+                onmouseleave="this.style.backgroundColor='white'; this.style.color='black'">
                     ${place.name}
               </div>`,
           },
@@ -93,23 +90,29 @@ const Home = () => {
           marker.setZIndex(1);
           // open info window
           infoWindowRef.current!.setContent(`
-            <div style="padding: 0.5em; max-width: 15em">
-            <span style="font-weight: bold">${place.name}</span>
-            <p style="color: grey">${place.description}</p>
-            <br />
-            <span>주차 </span>
-            <span style="color: #2aa090">${
-              place.parking ? `${place.parking}대 ` : "미확인 "
-            }</span>
-            <span>화장실 </span>
-            <span style="color: #2aa090">${
-              place.toilet ? "있음" : "없음"
-            }</span>
-            <br />
-            <a href="${
-              isMobile ? naverMapUrl : naverMapUrl + "/place"
-            }" target="_blank" style="display: block; text-decoration: underline;">네이버 지도에서 보기</a>
-            <a href="${instagramUrl}" target="_blank" style="display: block; text-decoration: underline;">인스타그램에서 보기</a>
+            <div style="padding: 0.5em; max-width: 15em; box-shadow: 1px 1px 4px gray">
+              <span style="font-weight: bold">${place.name}</span>
+              <p style="color: gray">${place.description}</p>
+              <br />
+              <span>주차 </span>
+              <span style="color: ${COLOR.PRIMARY}">${
+            place.parking ? `${place.parking}대 ` : "미확인 "
+          }</span>
+              <span>화장실 </span>
+              <span style="color: ${COLOR.PRIMARY}">${
+            place.toilet ? "있음" : "없음"
+          }</span>
+              <br />
+              <a href="${
+                isMobile ? naverMapUrl : naverMapUrl + "/place"
+              }" target="_blank" style="display: block; text-decoration: underline;" 
+              onmouseover="this.style.color='${
+                COLOR.PRIMARY
+              }'" onmouseleave="this.style.color='black'">네이버 지도에서 보기</a>
+              <a href="${instagramUrl}" target="_blank" style="display: block; text-decoration: underline;"
+              onmouseover="this.style.color='${
+                COLOR.PRIMARY
+              }'" onmouseleave="this.style.color='black'">인스타그램에서 보기</a>
           </div>`);
           infoWindowRef.current!.open(mapRef.current!, marker);
           // close mobile sidebar
@@ -217,14 +220,13 @@ const Home = () => {
       // generate info window
       infoWindowRef.current = new naver.maps.InfoWindow({
         content: "",
-        borderColor: "#2aa090",
-        borderWidth: 2,
+        borderWidth: 0,
         pixelOffset: new naver.maps.Point(30, -10),
         disableAnchor: true,
       });
       // add event listener for click
       naver.maps.Event.addListener(mapRef.current, "click", () => {
-        infoWindowRef.current?.close();
+        infoWindowRef.current!.close();
       });
       // add event listener for drag end
       naver.maps.Event.addListener(
@@ -303,7 +305,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="relative md:ml-96 flex-1 max-h-full">
+        <div className="relative md:ml-96 flex-1 h-full">
           {mobileSidebarState === "hidden" && (
             <>
               {/* Search by word box for mobile */}
@@ -352,9 +354,9 @@ const Home = () => {
                     onClick={() => {
                       setMobileSidebarState("full");
                     }}
-                    className="md:hidden w-12 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4"
+                    className="md:hidden w-20 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4"
                   >
-                    <ArrowUpIcon className="w-8 h-8 text-primary" />
+                    <span>목록보기</span>
                   </button>
                 )}
 
@@ -364,9 +366,9 @@ const Home = () => {
                     onClick={() => {
                       setMobileSidebarState("min");
                     }}
-                    className="md:hidden w-12 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4"
+                    className="md:hidden w-20 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4"
                   >
-                    <ArrowDownIcon className="w-8 h-8 text-primary" />
+                    <span>목록닫기</span>
                   </button>
                 )}
 

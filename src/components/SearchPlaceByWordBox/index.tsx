@@ -17,9 +17,9 @@ const SearchPlaceByWordBox = ({
           ref={searchPlaceWordRef}
           type="text"
           placeholder="장소 이름으로 검색"
-          className="appearance-none w-full h-10 border-2 border-r-0 rounded-lg rounded-r-none border-primary focus:outline-primary-dark flex justify-between items-center p-4"
+          className="appearance-none w-full h-12 border-2 border-r-0 rounded-md rounded-r-none border-primary focus:outline-none flex justify-between items-center p-4"
         />
-        <button className="shrink-0 px-4 py-2 rounded-lg rounded-l-none text-white bg-primary hover:bg-primary-dark">
+        <button className="shrink-0 px-4 py-2 rounded-md rounded-l-none text-white text-lg bg-primary hover:bg-primary-dark">
           검색
         </button>
       </form>

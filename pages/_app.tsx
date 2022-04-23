@@ -3,10 +3,9 @@ import type { AppProps } from "next/app";
 import Amplify from "aws-amplify";
 import config from "@src/aws-exports";
 import { DefaultSeo, DefaultSeoProps } from "next-seo";
+import { PUBLIC_URL } from "@src/constants";
 
 Amplify.configure({ ...config, ssr: true });
-
-export const PUBLIC_URL = "https://main.d2l0whstfhxlrm.amplifyapp.com";
 
 const defaultSeo: DefaultSeoProps = {
   title: "어디가지 | 나들이 장소 찾기",

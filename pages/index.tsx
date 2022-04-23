@@ -87,6 +87,7 @@ const Home = () => {
           },
         });
         const naverMapUrl = "https://map.naver.com/v5/search/" + place.name;
+        const instagramUrl = "https://instagram.com/explore/tags/" + place.name;
         naver.maps.Event.addListener(marker, "click", async () => {
           // float marker
           marker.setZIndex(1);
@@ -107,7 +108,8 @@ const Home = () => {
             <br />
             <a href="${
               isMobile ? naverMapUrl : naverMapUrl + "/place"
-            }" style="display: block; text-decoration: underline;">네이버 지도에서 보기</a>
+            }" target="_blank" style="display: block; text-decoration: underline;">네이버 지도에서 보기</a>
+            <a href="${instagramUrl}" target="_blank" style="display: block; text-decoration: underline;">인스타그램에서 보기</a>
           </div>`);
           infoWindowRef.current!.open(mapRef.current!, marker);
           // close mobile sidebar

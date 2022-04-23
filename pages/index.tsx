@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Script from "next/script";
+import Image from "next/image";
 import { IMapReverseGeocodingResponse } from "@api/map/reverseGeocoding";
 import { IDailyWeather, IWeatherDailyResponse } from "@api/weather/daily";
 import { API, graphqlOperation } from "aws-amplify";
@@ -255,7 +256,8 @@ const Home = () => {
         <div className="hidden md:flex flex-col w-96 h-full fixed inset-y-0">
           <div className="h-full flex flex-col flex-grow p-6">
             {/* Logo */}
-            <div className="flex items-center flex-shrink-0">
+            <div className="flex gap-2 items-center flex-shrink-0">
+              <Image src="/icon.png" width="48" height="48" />
               <span className="text-3xl font-bold text-primary">어디가지</span>
             </div>
 

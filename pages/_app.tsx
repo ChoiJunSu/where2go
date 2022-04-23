@@ -18,15 +18,10 @@ const defaultSeo = {
     site_name: "어디가지",
     images: [
       {
-        url: "/images/picnic.jpg",
+        url: "/picnic.jpg",
         alt: "피크닉",
       },
     ],
-  },
-  twitter: {
-    handle: "@handle",
-    site: "@site",
-    cardType: "summary",
   },
 };
 

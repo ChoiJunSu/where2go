@@ -17,7 +17,7 @@ import {
   ArrowLeftIcon,
   ArrowUpIcon,
 } from "@heroicons/react/outline";
-import Head from "next/head";
+import { isMobile } from "react-device-detect";
 
 const Home = () => {
   const [mobileSidebarState, setMobileSidebarState] = useState<
@@ -86,6 +86,7 @@ const Home = () => {
               </div>`,
           },
         });
+        const naverMapUrl = "https://map.naver.com/v5/search/" + place.name;
         naver.maps.Event.addListener(marker, "click", async () => {
           // float marker
           marker.setZIndex(1);
@@ -94,6 +95,7 @@ const Home = () => {
             <div style="padding: 0.5em; max-width: 15em">
             <span style="font-weight: bold">${place.name}</span>
             <p style="color: grey">${place.description}</p>
+            <br />
             <span>주차 </span>
             <span style="color: #2aa090">${
               place.parking ? `${place.parking}대 ` : "미확인 "
@@ -102,6 +104,10 @@ const Home = () => {
             <span style="color: #2aa090">${
               place.toilet ? "있음" : "없음"
             }</span>
+            <br />
+            <a href="${
+              isMobile ? naverMapUrl : naverMapUrl + "/place"
+            }" style="display: block; text-decoration: underline;">네이버 지도에서 보기</a>
           </div>`);
           infoWindowRef.current!.open(mapRef.current!, marker);
           // close mobile sidebar

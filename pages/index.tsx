@@ -1,60 +1,26 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import {
-  CalendarIcon,
-  ChartBarIcon,
-  FolderIcon,
-  HomeIcon,
-  InboxIcon,
-  UsersIcon,
-  XIcon,
-} from "@heroicons/react/outline";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { IMapReverseGeocodingResponse } from "@api/map/reverseGeocoding";
 import { IDailyWeather, IWeatherDailyResponse } from "@api/weather/daily";
-import {
-  WiCloud,
-  WiDaySunny,
-  WiRain,
-  WiRainMix,
-  WiSnow,
-  WiThunderstorm,
-} from "react-icons/wi";
 import { API, graphqlOperation } from "aws-amplify";
 import { listPlaces } from "@src/graphql/queries";
 import { GraphQLResult } from "@aws-amplify/api-graphql";
 import { Place } from "@src/API";
-
-const navigation = [
-  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-  { name: "Team", href: "#", icon: UsersIcon, current: false },
-  { name: "Projects", href: "#", icon: FolderIcon, current: false },
-  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
-  { name: "Documents", href: "#", icon: InboxIcon, current: false },
-  { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
-];
-
-const weatherMainMapper = (main: string) => {
-  switch (main) {
-    case "Thunderstorm":
-      return <WiThunderstorm className="w-8 h-8 text-gray-600" />;
-    case "Drizzle":
-      return <WiRainMix className="w-8 h-8 text-gray-600" />;
-    case "Rain":
-      return <WiRain className="w-8 h-8 text-gray-600" />;
-    case "Snow":
-      return <WiSnow className="w-8 h-8 text-gray-600" />;
-    case "Clear":
-      return <WiDaySunny className="w-8 h-8 text-orange-600" />;
-    case "Clouds":
-      return <WiCloud className="w-8 h-8 text-sky-700" />;
-    default:
-      return <WiCloud className="w-8 h-8 text-gray-600" />;
-  }
-};
+import MapBox from "@src/components/MapBox";
+import SearchPlaceByWordBox from "@src/components/SearchPlaceByWordBox";
+import SearchPlaceByPositionBox from "@src/components/SearchPlaceByPositionBox";
+import WeatherBox from "@src/components/WeatherBox";
+import PlaceListBox from "@src/components/PlaceListBox";
+import {
+  ArrowDownIcon,
+  ArrowLeftIcon,
+  ArrowUpIcon,
+} from "@heroicons/react/outline";
 
 const Home = () => {
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [mobileSidebarState, setMobileSidebarState] = useState<
+    "full" | "half" | "min" | "hidden"
+  >("hidden");
   const mapRef = useRef<naver.maps.Map>();
   const infoWindowRef = useRef<naver.maps.InfoWindow>();
   const searchPlaceWordRef = useRef<HTMLInputElement | null>(null);
@@ -118,8 +84,10 @@ const Home = () => {
               </div>`,
           },
         });
-        naver.maps.Event.addListener(marker, "click", () => {
+        naver.maps.Event.addListener(marker, "click", async () => {
+          // float marker
           marker.setZIndex(1);
+          // open info window
           infoWindowRef.current!.setContent(`
             <div style="padding: 0.5em; max-width: 15em">
             <span style="font-weight: bold">${place.name}</span>
@@ -134,6 +102,8 @@ const Home = () => {
             }</span>
           </div>`);
           infoWindowRef.current!.open(mapRef.current!, marker);
+          // close mobile sidebar
+          setMobileSidebarState("min");
         });
         newMarkerList[place.name] = marker;
       });
@@ -167,6 +137,8 @@ const Home = () => {
     setPlaceList(newPlaceList);
     // update marker list
     updateMarkerList(newPlaceList);
+    // open mobile sidebar
+    setMobileSidebarState("half");
   }, [updateMarkerList]);
 
   const searchPlaceByPosition = useCallback(async () => {
@@ -190,6 +162,8 @@ const Home = () => {
     setPlaceList(newPlaceList);
     // update marker list
     updateMarkerList(newPlaceList);
+    // open mobile sidebar
+    setMobileSidebarState("half");
   }, [updateMarkerList]);
 
   const selectPlace = useCallback(
@@ -204,6 +178,8 @@ const Home = () => {
       await getReverseGeocoding(place.latitude, place.longitude);
       // open info window
       naver.maps.Event.trigger(markerList[place.name], "click");
+      // close mobile sidebar
+      setMobileSidebarState("min");
     },
     [getDailyWeather, getReverseGeocoding, markerList]
   );
@@ -261,225 +237,159 @@ const Home = () => {
   }, []);
 
   return (
-    <>
+    <div className="h-screen">
       {/* Naver map api */}
       <Script
         src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=1jpfqh75nm"
         strategy="beforeInteractive"
       />
 
-      <div>
-        <Transition.Root show={sidebarOpen} as={Fragment}>
-          <Dialog
-            as="div"
-            className="fixed inset-0 flex z-40 md:hidden"
-            onClose={setSidebarOpen}
-          >
-            <Transition.Child
-              as={Fragment}
-              enter="transition-opacity ease-linear duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="transition-opacity ease-linear duration-300"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <Dialog.Overlay className="fixed inset-0 bg-gray-600 bg-opacity-75" />
-            </Transition.Child>
-            <Transition.Child
-              as={Fragment}
-              enter="transition ease-in-out duration-300 transform"
-              enterFrom="-translate-x-full"
-              enterTo="translate-x-0"
-              leave="transition ease-in-out duration-300 transform"
-              leaveFrom="translate-x-0"
-              leaveTo="-translate-x-full"
-            >
-              <div className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-indigo-700">
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-in-out duration-300"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="ease-in-out duration-300"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div className="absolute top-0 right-0 -mr-12 pt-2">
-                    <button
-                      type="button"
-                      className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <span className="sr-only">Close sidebar</span>
-                      <XIcon
-                        className="h-6 w-6 text-white"
-                        aria-hidden="true"
-                      />
-                    </button>
-                  </div>
-                </Transition.Child>
-                <div className="flex-shrink-0 flex items-center px-4">
-                  <img
-                    className="h-8 w-auto"
-                    src="https://tailwindui.com/img/logos/workflow-logo-indigo-300-mark-white-text.svg"
-                    alt="Workflow"
-                  />
-                </div>
-                <div className="mt-5 flex-1 h-0 overflow-y-auto">
-                  <nav className="px-2 space-y-1">
-                    {navigation.map((item) => (
-                      <a
-                        key={item.name}
-                        href={item.href}
-                        className={`
-                          ${
-                            item.current
-                              ? "bg-indigo-800 text-white"
-                              : "text-indigo-100 hover:bg-indigo-600"
-                          } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
-                      >
-                        <item.icon
-                          className="mr-4 flex-shrink-0 h-6 w-6 text-indigo-300"
-                          aria-hidden="true"
-                        />
-                        {item.name}
-                      </a>
-                    ))}
-                  </nav>
-                </div>
+      {/* Sidebar for desktop */}
+      <div className="hidden md:flex flex-col w-96 h-full fixed inset-y-0">
+        <div className="h-full flex flex-col flex-grow p-6">
+          {/* Logo */}
+          <div className="flex items-center flex-shrink-0">
+            <span className="text-3xl font-bold text-primary">어디가지</span>
+          </div>
+
+          {/* Search box */}
+          <div className="mt-10">
+            <SearchPlaceByWordBox
+              searchPlaceByWord={searchPlaceByWord}
+              searchPlaceWordRef={searchPlaceWordRef}
+            />
+            <div className="mt-2 relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
               </div>
-            </Transition.Child>
-            <div className="flex-shrink-0 w-14" aria-hidden="true">
-              {/* Dummy element to force sidebar to shrink to fit close icon */}
-            </div>
-          </Dialog>
-        </Transition.Root>
-
-        {/* Static sidebar for desktop */}
-        <div className="hidden md:flex md:w-96 md:flex-col md:fixed md:inset-y-0">
-          <div className="flex flex-col flex-grow p-6 overflow-y-auto">
-            {/* Logo */}
-            <div className="flex items-center flex-shrink-0">
-              <span className="text-3xl font-bold text-primary">어디가지</span>
-            </div>
-
-            {/* Search box */}
-            <div className="mt-10">
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  await searchPlaceByWord();
-                }}
-                className="flex gap-2 justify-between"
-              >
-                <input
-                  ref={searchPlaceWordRef}
-                  type="text"
-                  placeholder="장소 이름으로 검색"
-                  className="appearance-none w-full h-10 border-2 border-primary focus:outline-primary-dark rounded-lg flex justify-between items-center p-4"
-                />
-                <button className="shrink-0 px-4 py-2 rounded-lg text-white bg-primary hover:bg-primary-dark">
-                  검색
-                </button>
-              </form>
-              <div className="mt-2 relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm sm:text-lg">
-                  <span className="px-2 bg-white text-gray-500">또는</span>
-                </div>
-              </div>
-              <button
-                onClick={async () => {
-                  await searchPlaceByPosition();
-                }}
-                className="mt-2 w-full h-10 bg-primary hover:bg-primary-dark rounded-lg flex justify-center items-center p-4"
-              >
-                <span className="text-white font-medium">
-                  지금 보고있는 범위에서 검색
-                </span>
-              </button>
-            </div>
-
-            {/* Weather box */}
-            <div className="mt-10">
-              <span className="block font-semibold text-xl">{addressName}</span>
-              <div className="mt-2 flex gap-4 divide-x-2">
-                <div className="pl-4 grid grid-cols-2 gap-2 items-center">
-                  <div className="flex flex-col place-items-center">
-                    {todayWeather && (
-                      <span>
-                        {weatherMainMapper(todayWeather.weather[0].main)}
-                      </span>
-                    )}
-                    <span>오늘</span>
-                  </div>
-                  <span>
-                    {todayWeather?.temp.min.toFixed(0)} /{" "}
-                    {todayWeather?.temp.max.toFixed(0)}
-                  </span>
-                </div>
-                <div className="pl-4 grid grid-cols-2 gap-2 items-center">
-                  <div className="flex flex-col place-items-center">
-                    {tomorrowWeather && (
-                      <span>
-                        {weatherMainMapper(tomorrowWeather.weather[0].main)}
-                      </span>
-                    )}
-                    <span>내일</span>
-                  </div>
-                  <span>
-                    {tomorrowWeather?.temp.min.toFixed(0)} /{" "}
-                    {tomorrowWeather?.temp.max.toFixed(0)}
-                  </span>
-                </div>
+              <div className="relative flex justify-center text-sm sm:text-lg">
+                <span className="px-2 bg-white text-gray-500">또는</span>
               </div>
             </div>
-
-            {/* Place list */}
-            <div className="mt-10 flex flex-col divide-y-2 border-y-2">
-              {placeList.map((place, index) => (
-                <button
-                  key={index}
-                  onClick={async () => {
-                    await selectPlace(place);
-                  }}
-                  className="w-full h-36 py-4 flex flex-col justify-between text-left hover:bg-gray-100"
-                >
-                  <div>
-                    <span className="block text-xl font-semibold">
-                      {place.name}
-                    </span>
-                    <span className="text-lg text-gray-500 line-clamp-2">
-                      {place.description}
-                    </span>
-                  </div>
-                  <div className="text-lg">
-                    <span className="text-gray-900">주차</span>{" "}
-                    <span className="text-primary">
-                      {place.parking ? `${place.parking}대` : "미확인"}
-                    </span>{" "}
-                    <span className="text-gray-900">화장실</span>{" "}
-                    <span className="text-primary">
-                      {place.toilet ? "있음" : "없음"}
-                    </span>
-                  </div>
-                </button>
-              ))}
+            <div className="mt-2">
+              <SearchPlaceByPositionBox
+                searchPlaceByPosition={searchPlaceByPosition}
+              />
             </div>
           </div>
-        </div>
 
-        {/* Map box */}
-        <div className="md:pl-96 flex-1">
-          <main>
-            <div id="map" className="w-full h-screen" />
-          </main>
+          {/* Weather box */}
+          {addressName && todayWeather && tomorrowWeather && (
+            <div className="mt-10">
+              <WeatherBox
+                addressName={addressName}
+                todayWeather={todayWeather}
+                tomorrowWeather={tomorrowWeather}
+              />
+            </div>
+          )}
+
+          {/* Place list */}
+          <div className="mt-10 h-full">
+            <PlaceListBox placeList={placeList} selectPlace={selectPlace} />
+          </div>
         </div>
       </div>
-    </>
+
+      <div className="relative md:ml-96 flex-1 max-h-full">
+        {mobileSidebarState === "hidden" && (
+          <>
+            {/* Search by word box for mobile */}
+            <div className="md:hidden w-full px-4 absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+              <SearchPlaceByWordBox
+                searchPlaceByWord={searchPlaceByWord}
+                searchPlaceWordRef={searchPlaceWordRef}
+              />
+            </div>
+
+            {/* Search by position box for mobile */}
+            <div className="md:hidden w-full px-4 absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+              <SearchPlaceByPositionBox
+                searchPlaceByPosition={searchPlaceByPosition}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Sidebar for mobile */}
+        {mobileSidebarState !== "hidden" && (
+          <>
+            {/* Back button */}
+            <button
+              onClick={() => {
+                setMobileSidebarState("hidden");
+              }}
+              className="md:hidden absolute z-10 top-4 left-4 bg-white p-2 rounded-full shadow-lg"
+            >
+              <ArrowLeftIcon className="w-8 h-8 text-primary" />
+            </button>
+
+            {/* Place list box */}
+            <div
+              className={`md:hidden absolute z-10 bottom-0 w-full flex flex-col ${
+                mobileSidebarState === "full"
+                  ? "h-5/6"
+                  : mobileSidebarState === "half"
+                  ? "h-1/2"
+                  : mobileSidebarState === "min"
+                  ? "h-1/5"
+                  : ""
+              }`}
+            >
+              {/* Up/Down button group */}
+              <div className="w-32 mx-auto flex">
+                {/* Up button */}
+                <button
+                  onClick={() => {
+                    switch (mobileSidebarState) {
+                      case "half": {
+                        setMobileSidebarState("full");
+                        break;
+                      }
+                      case "min": {
+                        setMobileSidebarState("half");
+                        break;
+                      }
+                    }
+                  }}
+                  className={`md:hidden w-12 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4 ${
+                    mobileSidebarState === "full" ? "hidden" : ""
+                  }`}
+                >
+                  <ArrowUpIcon className="w-8 h-8 text-primary" />
+                </button>
+
+                {/* Down button */}
+                <button
+                  onClick={() => {
+                    switch (mobileSidebarState) {
+                      case "full": {
+                        setMobileSidebarState("half");
+                        break;
+                      }
+                      case "half": {
+                        setMobileSidebarState("min");
+                        break;
+                      }
+                    }
+                  }}
+                  className={`md:hidden w-12 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4 ${
+                    mobileSidebarState === "min" ? "hidden" : ""
+                  }`}
+                >
+                  <ArrowDownIcon className="w-8 h-8 text-primary" />
+                </button>
+              </div>
+
+              <PlaceListBox placeList={placeList} selectPlace={selectPlace} />
+            </div>
+          </>
+        )}
+
+        {/* Map box */}
+        <MapBox />
+      </div>
+    </div>
   );
 };
 

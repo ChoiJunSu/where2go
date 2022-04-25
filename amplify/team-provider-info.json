@@ -16,7 +16,8 @@
         "where2go": {
           "rdsClusterIdentifier": "arn:aws:rds:ap-northeast-2:331733482250:cluster:where2go-db",
           "rdsSecretStoreArn": "arn:aws:secretsmanager:ap-northeast-2:331733482250:secret:rds-db-credentials/cluster-2CMP4X5K7DMGJU3FVKLTQZKAJ4/admin-uJkwfB",
-          "rdsDatabaseName": "where2go"
+          "rdsDatabaseName": "where2go",
+          "rdsRegion": "ap-northeast-2"
         }
       },
       "hosting": {

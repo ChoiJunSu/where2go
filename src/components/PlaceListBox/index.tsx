@@ -9,23 +9,25 @@ const PlaceListBox = ({ placeList, selectPlace }: IPlaceListBoxProps) => {
           onClick={async () => {
             await selectPlace(place);
           }}
-          className="h-40 py-4 flex flex-col justify-between text-left hover:bg-gray-100"
+          className="py-4 flex flex-col justify-between text-left hover:bg-gray-100"
         >
           <div>
-            <span className="block text-xl font-semibold text-[#436AAC]">
+            <span className="block text-xl font-bold text-[#436AAC]">
               {place.name}
             </span>
-            <span className="text-lg text-gray-500 line-clamp-2">
+            <span className="text-lg text-gray-900 line-clamp-2 h-14 my-2">
               {place.description}
             </span>
           </div>
-          <div className="text-lg">
-            <span className="text-gray-900 font-medium">주차</span>{" "}
-            <span className="text-primary">
-              {place.parking ? `${place.parking}대` : "미확인"}
-            </span>{" "}
-            <span className="text-gray-900 font-medium">화장실</span>{" "}
-            <span className="text-primary">
+          <div className="text-lg text-gray-900">
+            <span>주차</span>{" "}
+            <span className="font-semibold">
+              {place.parking ? `${place.parking}` : "미확인"}
+            </span>
+            <span className="ml-0.5">{place.parking ? "대" : ""}</span>
+            <span className="text-gray-500">{" / "}</span>
+            <span>화장실</span>{" "}
+            <span className="font-semibold">
               {place.toilet ? "있음" : "없음"}
             </span>
           </div>

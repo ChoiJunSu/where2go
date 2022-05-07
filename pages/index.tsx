@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import Image from "next/image";
 import { IMapReverseGeocodingResponse } from "@api/map/reverseGeocoding";
@@ -22,7 +22,6 @@ const Home = () => {
   >("hidden");
   const mapRef = useRef<naver.maps.Map>();
   const infoWindowRef = useRef<naver.maps.InfoWindow>();
-  const searchPlaceWordRef = useRef<HTMLInputElement | null>(null);
   const [markerList, setMarkerList] = useState<
     Record<string, naver.maps.Marker>
   >({});
@@ -76,9 +75,9 @@ const Home = () => {
           title: place.name,
           icon: {
             content: `
-              <div style="padding: 0.5em 1em; font-weight: bold; color: #436AAC; background-color: white; border: solid; border-width: 3px; border-color: #436AAC; border-radius: 20px; box-shadow: 2px 2px 4px gray; white-space: nowrap; overflow: hidden;"
-                onmouseover="this.style.backgroundColor='#436AAC'; this.style.color='white'"
-                onmouseleave="this.style.backgroundColor='white'; this.style.color='#436AAC'">
+              <div style="padding: 0.5em 1em; font-weight: bold; color: ${COLOR.SECONDARY}; background-color: white; border: solid; border-width: 3px; border-color: ${COLOR.SECONDARY}; border-radius: 20px; box-shadow: 2px 2px 4px gray; white-space: nowrap; overflow: hidden;"
+                onmouseover="this.style.backgroundColor='${COLOR.SECONDARY}'; this.style.color='white'"
+                onmouseleave="this.style.backgroundColor='white'; this.style.color='${COLOR.SECONDARY}'">
                     ${place.name}
               </div>`,
           },
@@ -90,31 +89,34 @@ const Home = () => {
           marker.setZIndex(1);
           // open info window
           infoWindowRef.current!.setContent(`
-            <div style="padding: 0.5em; max-width: 15em; box-shadow: 1px 1px 4px gray">
-              <span style="font-weight: bold; color: #436AAC">${
-                place.name
-              }</span>
-              <p style="color: gray">${place.description}</p>
-              <br />
+            <div style="padding: 1em; max-width: 15em; box-shadow: 1px 1px 4px gray;">
+              <span style="display: block; margin-bottom: 0.5rem; font-size: 1.25rem; font-weight: bold; color: ${
+                COLOR.SECONDARY
+              }">${place.name}</span>
               <span>주차 </span>
-              <span style="color: ${COLOR.PRIMARY}">${
-            place.parking ? `${place.parking}대 ` : "미확인 "
-          }</span>
+              <span style="font-weight: bold;">${
+                place.parking ? `${place.parking} ` : "미확인 "
+              }</span>
+              <span>${place.parking ? "대" : ""}</span>
+              <span style="color: gray"> / </span>
               <span>화장실 </span>
-              <span style="color: ${COLOR.PRIMARY}">${
-            place.toilet ? "있음" : "없음"
-          }</span>
-              <br />
+              <span style="font-weight: bold;">${
+                place.toilet ? "있음" : "없음"
+              }</span>
+              <div style="display: block; margin: 1rem 0 0">
               <a href="${
                 isMobile ? naverMapUrl : naverMapUrl + "/place"
-              }" target="_blank" style="display: block; text-decoration: underline;" 
-              onmouseover="this.style.color='${
-                COLOR.PRIMARY
-              }'" onmouseleave="this.style.color='black'">네이버 지도에서 보기</a>
-              <a href="${instagramUrl}" target="_blank" style="display: block; text-decoration: underline;"
-              onmouseover="this.style.color='${
-                COLOR.PRIMARY
-              }'" onmouseleave="this.style.color='black'">인스타그램에서 보기</a>
+              }" target="_blank"
+              >
+              <img alt="네이버지도에서 검색" style="display: inline; height: 32px; width: 32px; border: 2px solid gray; border-radius: 8px;" onmouseover="this.style.border='2px solid ${
+                COLOR.SECONDARY
+              }';" onmouseleave="this.style.border='2px solid gray';" src="/navermaps.png" /></a>
+              <a href="${instagramUrl}" target="_blank"
+              >
+              <img alt="인스타그램에서 검색" style="display: inline; margin: 0 0.5rem; height: 32px; width: 32px; border: 2px solid gray; border-radius: 8px;" onmouseover="this.style.border='2px solid ${
+                COLOR.SECONDARY
+              }';" onmouseleave="this.style.border='2px solid gray';" src="/instagram.png" /></a>
+              </div>
           </div>`);
           infoWindowRef.current!.open(mapRef.current!, marker);
           // close mobile sidebar
@@ -128,33 +130,31 @@ const Home = () => {
     [markerList]
   );
 
-  const searchPlaceByWord = useCallback(async () => {
-    if (
-      !mapRef.current ||
-      !searchPlaceWordRef.current ||
-      !searchPlaceWordRef.current.value
-    )
-      return;
-    // close info window
-    infoWindowRef.current?.close();
-    // fetch place list
-    const listPlacesResult = (await API.graphql(
-      graphqlOperation(listPlaces, {
-        name: searchPlaceWordRef.current.value,
-      })
-    )) as GraphQLResult<{ listPlaces: Array<Place> }>;
-    if (!listPlacesResult.data || !listPlacesResult.data.listPlaces) return;
-    const newPlaceList = listPlacesResult.data.listPlaces;
-    // change map's center and zoom: center of South Korea
-    mapRef.current.setCenter(new naver.maps.LatLng(36.3491175, 127.7615482));
-    mapRef.current.setZoom(7);
-    // update place list
-    setPlaceList(newPlaceList);
-    // update marker list
-    updateMarkerList(newPlaceList);
-    // open mobile sidebar
-    setMobileSidebarState("min");
-  }, [updateMarkerList]);
+  const searchPlaceByWord = useCallback(
+    async (searchPlaceWord: string) => {
+      if (!mapRef.current || !searchPlaceWord) return;
+      // close info window
+      infoWindowRef.current?.close();
+      // fetch place list
+      const listPlacesResult = (await API.graphql(
+        graphqlOperation(listPlaces, {
+          name: searchPlaceWord,
+        })
+      )) as GraphQLResult<{ listPlaces: Array<Place> }>;
+      if (!listPlacesResult.data || !listPlacesResult.data.listPlaces) return;
+      const newPlaceList = listPlacesResult.data.listPlaces;
+      // change map's center and zoom: center of South Korea
+      mapRef.current.setCenter(new naver.maps.LatLng(36.3491175, 127.7615482));
+      mapRef.current.setZoom(7);
+      // update place list
+      setPlaceList(newPlaceList);
+      // update marker list
+      updateMarkerList(newPlaceList);
+      // open mobile sidebar
+      setMobileSidebarState("min");
+    },
+    [updateMarkerList]
+  );
 
   const searchPlaceByPosition = useCallback(async () => {
     if (!mapRef.current) return;
@@ -253,6 +253,7 @@ const Home = () => {
   return (
     <>
       <div className="h-screen-safe md:h-screen">
+        {/*<div className="h-screen md:h-screen">*/}
         {/* Naver map api */}
         <Script
           src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=1jpfqh75nm"
@@ -265,17 +266,12 @@ const Home = () => {
             {/* Logo */}
             <div className="flex gap-2 items-center flex-shrink-0">
               <Image src="/icon.png" width="48" height="48" />
-              <span className="text-3xl font-bold text-[#436AAC]">
-                어디가지
-              </span>
+              <span className="text-3xl font-bold text-primary">어디가지</span>
             </div>
 
             {/* Search box */}
             <div className="mt-10">
-              <SearchPlaceByWordBox
-                searchPlaceByWord={searchPlaceByWord}
-                searchPlaceWordRef={searchPlaceWordRef}
-              />
+              <SearchPlaceByWordBox searchPlaceByWord={searchPlaceByWord} />
               <div className="mt-2 relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300" />
@@ -314,10 +310,7 @@ const Home = () => {
             <>
               {/* Search by word box for mobile */}
               <div className="md:hidden w-full px-4 absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-                <SearchPlaceByWordBox
-                  searchPlaceByWord={searchPlaceByWord}
-                  searchPlaceWordRef={searchPlaceWordRef}
-                />
+                <SearchPlaceByWordBox searchPlaceByWord={searchPlaceByWord} />
               </div>
 
               {/* Search by position box for mobile */}
@@ -339,7 +332,7 @@ const Home = () => {
                 }}
                 className="md:hidden absolute z-10 top-4 left-4 bg-white p-2 rounded-full shadow-lg"
               >
-                <ArrowLeftIcon className="w-8 h-8 text-primary" />
+                <ArrowLeftIcon className="w-6 h-6 text-primary" />
               </button>
 
               {/* Place list box */}
@@ -360,7 +353,7 @@ const Home = () => {
                     }}
                     className="md:hidden w-20 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4"
                   >
-                    <span>목록보기</span>
+                    <span className="text-primary font-medium">목록보기</span>
                   </button>
                 )}
 
@@ -372,7 +365,7 @@ const Home = () => {
                     }}
                     className="md:hidden w-20 mx-auto z-10 bg-white p-2 rounded-full shadow-lg transform -translate-y-4"
                   >
-                    <span>목록닫기</span>
+                    <span className="text-primary font-medium">목록닫기</span>
                   </button>
                 )}
 

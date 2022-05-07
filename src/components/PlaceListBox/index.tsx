@@ -12,7 +12,9 @@ const PlaceListBox = ({ placeList, selectPlace }: IPlaceListBoxProps) => {
           className="h-40 py-4 flex flex-col justify-between text-left hover:bg-gray-100"
         >
           <div>
-            <span className="block text-xl font-semibold">{place.name}</span>
+            <span className="block text-xl font-semibold text-[#436AAC]">
+              {place.name}
+            </span>
             <span className="text-lg text-gray-500 line-clamp-2">
               {place.description}
             </span>

@@ -76,9 +76,9 @@ const Home = () => {
           title: place.name,
           icon: {
             content: `
-              <div style="padding: 0.5em 1em; font-weight: bold; color: black; background-color: white; border: solid; border-width: 3px; border-color: ${COLOR.PRIMARY}; border-radius: 20px; box-shadow: 2px 2px 4px gray; white-space: nowrap; overflow: hidden;"
-                onmouseover="this.style.backgroundColor='${COLOR.PRIMARY}'; this.style.color='white'"
-                onmouseleave="this.style.backgroundColor='white'; this.style.color='black'">
+              <div style="padding: 0.5em 1em; font-weight: bold; color: #436AAC; background-color: white; border: solid; border-width: 3px; border-color: #436AAC; border-radius: 20px; box-shadow: 2px 2px 4px gray; white-space: nowrap; overflow: hidden;"
+                onmouseover="this.style.backgroundColor='#436AAC'; this.style.color='white'"
+                onmouseleave="this.style.backgroundColor='white'; this.style.color='#436AAC'">
                     ${place.name}
               </div>`,
           },
@@ -91,7 +91,9 @@ const Home = () => {
           // open info window
           infoWindowRef.current!.setContent(`
             <div style="padding: 0.5em; max-width: 15em; box-shadow: 1px 1px 4px gray">
-              <span style="font-weight: bold">${place.name}</span>
+              <span style="font-weight: bold; color: #436AAC">${
+                place.name
+              }</span>
               <p style="color: gray">${place.description}</p>
               <br />
               <span>주차 </span>
@@ -263,7 +265,9 @@ const Home = () => {
             {/* Logo */}
             <div className="flex gap-2 items-center flex-shrink-0">
               <Image src="/icon.png" width="48" height="48" />
-              <span className="text-3xl font-bold text-primary">어디가지</span>
+              <span className="text-3xl font-bold text-[#436AAC]">
+                어디가지
+              </span>
             </div>
 
             {/* Search box */}

@@ -2,7 +2,7 @@ import { IPlaceListBoxProps } from "@src/components/PlaceListBox/type";
 
 const PlaceListBox = ({ placeList, selectPlace }: IPlaceListBoxProps) => {
   return (
-    <div className="h-full overflow-y-auto flex flex-col divide-y-2 border-y-2 bg-white px-4 rounded-2xl md:rounded-none pt-2">
+    <div className="h-full overflow-y-auto flex flex-col divide-y-2 border-y-2 bg-white px-4 rounded-2xl md:rounded-none pt-2 scrollbar-thin scrollbar-thumb-gray-200">
       {placeList.map((place, index) => (
         <button
           key={index}

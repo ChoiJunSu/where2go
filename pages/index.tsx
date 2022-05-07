@@ -110,12 +110,13 @@ const Home = () => {
               >
               <img alt="네이버지도에서 검색" style="display: inline; height: 32px; width: 32px; border: 2px solid gray; border-radius: 8px;" onmouseover="this.style.border='2px solid ${
                 COLOR.SECONDARY
-              }';" onmouseleave="this.style.border='2px solid gray';" src="/navermaps.png" /></a>
-              <a href="${instagramUrl}" target="_blank"
-              >
+              }';" onmouseleave="this.style.border='2px solid gray';" src="/navermaps.png" />
+              </a>
+              <a href="${instagramUrl}" target="_blank">
               <img alt="인스타그램에서 검색" style="display: inline; margin: 0 0.5rem; height: 32px; width: 32px; border: 2px solid gray; border-radius: 8px;" onmouseover="this.style.border='2px solid ${
                 COLOR.SECONDARY
-              }';" onmouseleave="this.style.border='2px solid gray';" src="/instagram.png" /></a>
+              }';" onmouseleave="this.style.border='2px solid gray';" src="/instagram.png" />
+              </a>
               </div>
           </div>`);
           infoWindowRef.current!.open(mapRef.current!, marker);
@@ -223,7 +224,7 @@ const Home = () => {
       infoWindowRef.current = new naver.maps.InfoWindow({
         content: "",
         borderWidth: 0,
-        pixelOffset: new naver.maps.Point(30, -10),
+        pixelOffset: new naver.maps.Point(50, -10),
         disableAnchor: true,
       });
       // add event listener for click
@@ -277,7 +278,7 @@ const Home = () => {
                   <div className="w-full border-t border-gray-300" />
                 </div>
                 <div className="relative flex justify-center text-sm sm:text-lg">
-                  <span className="px-2 bg-white text-gray-500">또는</span>
+                  <span className="px-2 bg-gray-50 text-gray-500">또는</span>
                 </div>
               </div>
               <div className="mt-2">

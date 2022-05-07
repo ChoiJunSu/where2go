@@ -1,0 +1,27 @@
+{
+    "hosting": {
+        "amplifyhosting": {
+            "service": "amplifyhosting",
+            "type": "cicd"
+        }
+    },
+    "api": {
+        "where2go": {
+            "service": "AppSync",
+            "providerPlugin": "awscloudformation",
+            "dependsOn": [],
+            "output": {
+                "authConfig": {
+                    "defaultAuthentication": {
+                        "authenticationType": "API_KEY",
+                        "apiKeyConfig": {
+                            "apiKeyExpirationDays": 7
+                        }
+                    },
+                    "additionalAuthenticationProviders": []
+                }
+            },
+            "rdsInit": true
+        }
+    }
+}

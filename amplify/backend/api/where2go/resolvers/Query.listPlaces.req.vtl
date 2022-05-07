@@ -1,0 +1,10 @@
+#set( $where = "WHERE" )
+#if( $ctx.args.name )
+    #set( $where = "$where name LIKE '%$ctx.args.name%'" )
+#elseif( $ctx.args.neLat && $ctx.args.neLng && $ctx.args.swLat && $ctx.args.swLng )
+    #set( $where  = "$where latitude BETWEEN $ctx.args.swLat AND $ctx.args.neLat AND longitude BETWEEN $ctx.args.swLng AND $ctx.args.neLng" )
+#end
+{
+  "version": "2018-05-29",
+  "statements":   ["SELECT * FROM Place $where"]
+}
